@@ -40,18 +40,22 @@ while not isWinner:
 
         wordPassesLetterPositions = True
         for letter in validPositionMap:
-            if letter != word[validPositionMap[letter]]:
-                wordPassesLetterPositions = False
-                break
+            letterPositions = validPositionMap[letter]
+            for position in letterPositions:
+                if letter != word[position]:
+                    wordPassesLetterPositions = False
+                    break
         
         if not wordPassesLetterPositions:
             continue
 
         wordPassesInvalidLetterPositions = True
         for letter in invalidPositionMap:
-            if letter == word[invalidPositionMap[letter]]:
-                wordPassesInvalidLetterPositions = False
-                break
+            letterPositions = invalidPositionMap[letter]
+            for position in letterPositions:
+                if letter == word[position]:
+                    wordPassesInvalidLetterPositions = False
+                    break
         
         if not wordPassesInvalidLetterPositions:
             continue
@@ -106,17 +110,24 @@ while not isWinner:
         presentLetters.append(ch.upper())
     for ch in newInvalidLetters:
         nonPresentLetters.append(ch.upper())
-    #TODO: For maps, we need letters mapped to lists, since each letter can be in multiple positions
     if len(newValidPositions) != 0:
         for i in range(0, len(newValidPositions) - 1, 2):
             key = newValidPositions[i].upper()
             value = int(newValidPositions[i+1])
-            validPositionMap[key] = value
+            if key in validPositionMap:
+                if value not in validPositionMap[key]:
+                    validPositionMap[key].append(value)
+            else:
+                validPositionMap[key] = [value]
     if len(newInvalidPositions) != 0:
         for i in range(0, len(newInvalidPositions) - 1, 2):
             key = newInvalidPositions[i].upper()
             value = int(newInvalidPositions[i+1])
-            invalidPositionMap[key] = value
+            if key in invalidPositionMap:
+                if value not in invalidPositionMap[key]:
+                    invalidPositionMap[key].append(value)
+            else:
+                invalidPositionMap[key] = [value]
     print()
     print("Valid Letters:", presentLetters)
     print("Invalid Letters:", nonPresentLetters)
