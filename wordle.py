@@ -11,13 +11,18 @@ with open(filePath, 'r') as words:
         if len(word) == 6:
             wordList.append(word.upper().strip())
 
-presentLetters = []
-nonPresentLetters = []
+# Populate with most common letters to get most productive first round
+presentLetters = ['E', 'T', 'A']
+nonPresentLetters = ['J', 'Q', 'Z']
 validPositionMap = {}
 invalidPositionMap = {}
 isWinner = False
 isFirstWord = True
-while not isWinner:
+isFirstRount = True
+while True:
+    print()
+    print("********************")
+    print()
     validWords = []
     for word in wordList:
         wordPassesValidLetters = True
@@ -75,6 +80,9 @@ while not isWinner:
 
     generateNewRandom = True
     while (generateNewRandom):
+        if len(validWords) == 0:
+            print("Sorry, something went wrong. I found 0 valid words.")
+            exit()
         randIndex = randrange(len(validWords))
         randWord = validWords[randIndex]
         while isFirstWord:
@@ -85,10 +93,15 @@ while not isWinner:
                     randWord = validWords[randIndex]
                     isFirstWord = True
                     break
-                    
+               
         print("Suggested random word: ", randWord)
         if input("New Random? (y/n): ") != 'y':
             generateNewRandom = False
+
+    if isFirstRount:
+        isFirstRount = False
+        presentLetters = []
+        nonPresentLetters = []
 
     isContinue = input("Continue? (y/n): ")
     if isContinue != 'y':
