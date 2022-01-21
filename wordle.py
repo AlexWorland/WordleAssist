@@ -1,7 +1,5 @@
 import functools
 from random import random, randrange
-import requests
-import json
 
 letterWeightMap = dict()
 letterWeightMap['A'] = 0.082
@@ -146,7 +144,7 @@ def main():
         generateNewRandom = True
         while (generateNewRandom):
             if len(validWords) == 0:
-                print("Sorry, something went wrong. I found 0 valid words.")
+                print("Sorry, something went wrong. Found 0 valid words fitting restrictions.")
                 exit()
             if isFirstWord:
                 goodFirstWords = []
@@ -226,34 +224,6 @@ def main():
         print("Valid Letter Positions:", validPositionMap)
         print("Invalid Letter Positions:", invalidPositionMap)
         print()
-    definitions = input("Would you like definitions? (y/n): ")
-    if definitions == 'y' or definitions == 'yes':
-        print("getting definitions...")
-        # print("********** Getting Definitions **********")
-
-        definitionMap = {}
-        for word in validWords:
-            # print("Getting definition for:", word)
-            try:
-                response = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/" + word)
-                jsonResponse = response.json()
-                if 'title' in jsonResponse and jsonResponse['title'] == 'No Definitions Found':
-                    # print("error getting definition for", word)
-                    continue
-                else:
-                    definitionMap[word] = jsonResponse[0]['meanings'][0]['definitions'][0]['definition']
-            except:
-                print("Something went wrong while getting definition for", word)
-
-        print("********** Definitions **********")
-        for word in validWords:
-            if word in definitionMap:
-                print(word, ":", definitionMap[word])
-            else:
-                print(word, "No definition found")
-    else:
-        exit()
-
 
 if __name__ == '__main__':
     main()
