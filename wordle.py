@@ -49,8 +49,15 @@ def compareTupleValues(tuple1, tuple2):
 def compareWordValues(word1, word2):
     word1Value = findWordValue(word1)
     word2Value = findWordValue(word2)
+    word1Value = adjustWordValueForDuplicateLetters(word1, word1Value)
+    word2Value = adjustWordValueForDuplicateLetters(word2, word2Value)
     return word1Value - word2Value
 
+def adjustWordValueForDuplicateLetters(word, value):
+    for i in range(len(word)):
+        if word[i] in word[0:i] or word[i] in word[i + 1:len(word)]:
+            value = int(value * .9)
+    return value
 
 def findWordValue(word):
     wordWeight = 0
@@ -70,8 +77,8 @@ def main():
                 wordList.append(word.upper().strip())
 
     # Populate with most common letters to get most productive first round
-    presentLetters = ['E', 'T', 'A']
-    nonPresentLetters = ['J', 'Q', 'Z']
+    presentLetters = ['E', 'T', 'A', 'O']
+    nonPresentLetters = ['J', 'Q', 'Z', 'X']
     validPositionMap = {}
     invalidPositionMap = {}
     isWinner = False
@@ -159,7 +166,7 @@ def main():
             while isFirstWord:
                 isFirstWord = False
                 for i in range(len(randWord)):
-                    if randWord[i] in randWord[0:i] or randWord[i] in randWord[i + 1:len(randWord) - 1]:
+                    if randWord[i] in randWord[0:i] or randWord[i] in randWord[i + 1:len(randWord)]:
                         randIndex = randrange(len(validWords))
                         randWord = validWords[randIndex]
                         isFirstWord = True
