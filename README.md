@@ -1,6 +1,6 @@
 # Wordle Assistant
 
-This python script suggests words for the internet game Wordle `https://www.powerlanguage.co.uk/wordle/`
+This python script that suggests words for the internet game Wordle `https://www.powerlanguage.co.uk/wordle/`
 
 ## Instructions
 
