@@ -32,19 +32,38 @@ letterWeightMap['Z'] = 0.00074
 for weight in letterWeightMap:
     letterWeightMap[weight] = int(letterWeightMap[weight] * (10 ** 5))
 
+wordFrequencies = dict()
+wordFrequencyPath = "./unigram_freq_five_letter_words.csv"
+with open(wordFrequencyPath, 'r') as wordFreqFile:
+    lines = wordFreqFile.readlines()
+    for line in lines:
+        line = line.strip()
+        pair = line.split(",")
+        wordFrequencies[pair[0].upper()] = int(pair[1])
+    wordFreqFile.close()
 
-def pickMostValuableWordFromList(validWords):
-    validWords = sorted(validWords, key=functools.cmp_to_key(compareWordValues), reverse=True)
+
+def pickMostValuableWordFromListByLetterFreq(validWords):
+    validWords = sorted(validWords, key=functools.cmp_to_key(compareWordValuesByLetter), reverse=True)
     return validWords[0]
 
+def sortWordsBasedOnWordFrequency(validWords):
+    validWords = sorted(validWords, key=functools.cmp_to_key(compareWordValuesByWord), reverse=True)
+    # debug
+    list = []
+    for word in validWords:
+        list.append((word, wordFrequencies[word]))
+    return validWords
 
 def compareTupleValues(tuple1, tuple2):
     a = tuple1[0]
     b = tuple2[0]
     return a - b
 
+def compareWordValuesByWord(word1, word2):
+    return wordFrequencies[word1] - wordFrequencies[word2]
 
-def compareWordValues(word1, word2):
+def compareWordValuesByLetter(word1, word2):
     word1Value = findWordValue(word1)
     word2Value = findWordValue(word2)
     word1Value = adjustWordValueForDuplicateLetters(word1, word1Value)
@@ -66,7 +85,7 @@ def findWordValue(word):
 
 def main():
     # filePath = "./wordlist.txt"
-    filePath = "./words"
+    filePath = "./fiveletterwords.txt"
     wordList = []
 
     with open(filePath, 'r') as words:
@@ -75,13 +94,13 @@ def main():
                 wordList.append(word.upper().strip())
 
     # Populate with most common letters to get most productive first round
-    presentLetters = ['E', 'T', 'A', 'O']
-    nonPresentLetters = ['J', 'Q', 'Z', 'X']
+    presentLetters = ['E', 'A', 'S', 'I']
+    nonPresentLetters = []
     validPositionMap = {}
     invalidPositionMap = {}
     isWinner = False
     isFirstWord = True
-    isFirstRount = True
+    isFirstRound = True
     while True:
         print()
         print("********************")
@@ -129,60 +148,98 @@ def main():
                 continue
 
             validWords.append(word)
-        validWords.sort(key=functools.cmp_to_key(compareWordValues), reverse=True)
-        print("Suggesting", len(validWords), "words out of", len(wordList), "words")
+        validWords = sortWordsBasedOnWordFrequency(validWords)
+        numCols = 10
 
-        numCols = 20  # TODO: make adjustable based on terminal length (might not be possible)
+        if isFirstRound:
+            for word in validWords:
+                for i in range(len(word)):
+                    if word[i] in word[0:i] or word[i] in word[i+1:len(word)]:
+                        validWords.remove(word)
+                        break
+            presentLetters = []
+            nonPresentLetters = []
+            isFirstRound = False
 
+        print("********** Possible Words Sorted By Word Frequency **********")
         for i in range(0, len(validWords) - 1, numCols):
             tmpWordList = []
             for tmp in range(i, i + numCols, 1):
                 if tmp < len(validWords):
                     tmpWordList.append(validWords[tmp])
             print(tmpWordList)
+        print()
+        print("Recommended Word:", validWords[0])
 
-        generateNewRandom = True
-        while (generateNewRandom):
-            if len(validWords) == 0:
-                print("Sorry, something went wrong. Found 0 valid words fitting restrictions.")
-                exit()
-            if isFirstWord:
-                goodFirstWords = []
-                for word in validWords:
-                    isGoodFirstWord = True
-                    for i in range(len(word)):
-                        if word[i] in word[0:i] or word[i] in word[i + 1:len(word) - 1]:
-                            isGoodFirstWord = False
-                            break
-                    if isGoodFirstWord:
-                        goodFirstWords.append(word)
-                goodFirstWord = pickMostValuableWordFromList(goodFirstWords)
-                print("Recommended Starting Word:", goodFirstWord)
 
-            randIndex = randrange(len(validWords))
-            randWord = validWords[randIndex]
-            while isFirstWord:
-                isFirstWord = False
-                for i in range(len(randWord)):
-                    if randWord[i] in randWord[0:i] or randWord[i] in randWord[i + 1:len(randWord)]:
-                        randIndex = randrange(len(validWords))
-                        randWord = validWords[randIndex]
-                        isFirstWord = True
-                        break
 
-            print("Recommended Word:", validWords[0])
-            print("Suggested random word: ", randWord)
-            if input("New Random? (y/n): ") != 'y':
-                generateNewRandom = False
+        # validWordsCopy = validWords.copy()
+        # validWords.sort(key=functools.cmp_to_key(compareWordValuesByLetter), reverse=True)
+        # validWordsCopy = sortWordsBasedOnWordFrequency(validWordsCopy)
+        # print("Suggesting", len(validWords), "words out of", len(wordList), "words")
 
-        if isFirstRount:
-            isFirstRount = False
-            presentLetters = []
-            nonPresentLetters = []
+        # numCols = 10  # TODO: make adjustable based on terminal length (might not be possible)
 
-        isContinue = input("Continue? (y/n): ")
-        if isContinue != 'y':
-            break
+        # print("********** Possible Words Sorted By Letter Frequency **********")
+        # for i in range(0, len(validWords) - 1, numCols):
+        #     tmpWordList = []
+        #     for tmp in range(i, i + numCols, 1):
+        #         if tmp < len(validWords):
+        #             tmpWordList.append(validWords[tmp])
+        #     print(tmpWordList)
+        # print()
+        # print("********** Possible Words Sorted By Word Frequency **********")
+        # for i in range(0, len(validWordsCopy) - 1, numCols):
+        #     tmpWordList = []
+        #     for tmp in range(i, i + numCols, 1):
+        #         if tmp < len(validWordsCopy):
+        #             tmpWordList.append(validWordsCopy[tmp])
+        #     print(tmpWordList)
+
+
+        # generateNewRandom = True
+        # while (generateNewRandom):
+        #     if len(validWords) == 0:
+        #         print("Sorry, something went wrong. Found 0 valid words fitting restrictions.")
+        #         exit()
+        #     if isFirstWord:
+        #         goodFirstWords = []
+        #         for word in validWords:
+        #             isGoodFirstWord = True
+        #             for i in range(len(word)):
+        #                 if word[i] in word[0:i] or word[i] in word[i + 1:len(word) - 1]:
+        #                     isGoodFirstWord = False
+        #                     break
+        #             if isGoodFirstWord:
+        #                 goodFirstWords.append(word)
+        #         goodFirstWord = pickMostValuableWordFromListByLetterFreq(goodFirstWords)
+        #         print("Recommended Starting Word:", goodFirstWord)
+
+        #     randIndex = randrange(len(validWords))
+        #     randWord = validWords[randIndex]
+        #     while isFirstWord:
+        #         isFirstWord = False
+        #         for i in range(len(randWord)):
+        #             if randWord[i] in randWord[0:i] or randWord[i] in randWord[i + 1:len(randWord)]:
+        #                 randIndex = randrange(len(validWords))
+        #                 randWord = validWords[randIndex]
+        #                 isFirstWord = True
+        #                 break
+
+        #     print("Recommended Word by Letter Frequency:", validWords[0])
+        #     print("Recommended Word by Word Frequency:", validWordsCopy[0])
+        #     print("Suggested random word: ", randWord)
+        #     if input("New Random? (y/n): ") != 'y':
+        #         generateNewRandom = False
+
+        # if isFirstRount:
+        #     isFirstRount = False
+        #     presentLetters = []
+        #     nonPresentLetters = []
+
+        # isContinue = input("Continue? (y/n): ")
+        # if isContinue != 'y':
+        #     break
 
         print()
         print("Valid Letters:", presentLetters)
@@ -190,6 +247,7 @@ def main():
         print("Valid Letter Positions:", validPositionMap)
         print("Invalid Letter Positions:", invalidPositionMap)
         print()
+
         # Update word lists
         newValidLetters = input("New Valid Letters: ")
         newInvalidLetters = input("New Invalid Letters: ")
