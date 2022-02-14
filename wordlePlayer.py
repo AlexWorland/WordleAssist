@@ -9,8 +9,10 @@ import wordleAPI
 import signal
 from multiprocessing import Pool
 import re
+import time
 
 def wordleMultiProcessing(args):
+    startTime = time.time()
     word = args[0]
     initialGameState = args[1]
     wordList = args[2]
@@ -32,7 +34,8 @@ def wordleMultiProcessing(args):
             print("\t\tGuess\t\t:", guess)
             print("\t\tInformation\t:", information)
         wordleGame.guessWord(guess, information)
-    print("Played:", word, "in", round, "rounds")
+    endTime = time.time()
+    print("Played:", word, "in", round, "rounds", "|", "Time:", endTime - startTime)
     return (initialGameState, word, round)
 
 def wordleSingleWord(word):
@@ -200,7 +203,7 @@ if __name__ == "__main__":
         for word in wordList:
             funcArgs.append((word, gameState, nLetterWords))
 
-        with Pool(16) as p:
+        with Pool(8) as p:
             for x in p.imap(wordleMultiProcessing, funcArgs):
                 with open("wordleResults.txt", 'a') as lf:
                     returnList.append(x)
