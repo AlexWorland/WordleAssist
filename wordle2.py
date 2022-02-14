@@ -106,26 +106,26 @@ def getInputWordInformation(wordLength):
 
 def validateWord(wordToValidate, gameState):
     # Make sure word contains every valid letter
-    for letter in gameState.validLetters:
+    for letter in gameState.__validLetters:
         if letter in wordToValidate:
             continue
         else:
             return False
 
     # Make sure word contains no invalid letters
-    for letter in gameState.invalidLetters:
+    for letter in gameState.__invalidLetters:
         if letter in wordToValidate:
             return False
         
     # Check valid positions
-    for letter in gameState.validPositions:
-        for validPosition in gameState.validPositions[letter]:
+    for letter in gameState.__validPositions:
+        for validPosition in gameState.__validPositions[letter]:
             if wordToValidate[validPosition] != letter:
                 return False
 
     # Check invalid positions
-    for letter in gameState.invalidPositions:
-        for invalidPosition in gameState.invalidPositions[letter]:
+    for letter in gameState.__invalidPositions:
+        for invalidPosition in gameState.__invalidPositions[letter]:
             if wordToValidate[invalidPosition] == letter:
                 return False
 
