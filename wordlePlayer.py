@@ -221,7 +221,7 @@ if __name__ == "__main__":
             for line in lines:
                 gameState, word, roundCount = line.strip('\n').split(' | ')
                 if gameState not in gameStates and tmpRoundCounts != 0:
-                    avg = tmpRoundCounts.sum() / len(tmpRoundCounts)
+                    avg = sum(tmpRoundCounts) / len(tmpRoundCounts)
                     strToWrite = gameState + ' | ' + str(avg) + '\n'
                     stringsToWrite.append(gameState)
                     tmpRoundCounts.clear()
