@@ -22,10 +22,12 @@ def wordleMultiProcessing(args):
     printGuesses = False
     wordleAnswer = word
     round = 0
+    gameWon = False
     for i in range(maxRounds):
         round += 1
         guess = wordleGame.getNextRecommendedWord()
         if guess == wordleAnswer:
+            gameWon = True
             break
         information = getWordInformation(guess, wordleAnswer)
         if printGuesses:
@@ -35,6 +37,8 @@ def wordleMultiProcessing(args):
             print("\t\tInformation\t:", information)
         wordleGame.guessWord(guess, information)
     endTime = time.time()
+    if not gameWon:
+        round = -1
     print("Played:", word, "in", round, "rounds", "|", "Time:", endTime - startTime)
     return (initialGameState, word, round)
 
@@ -223,8 +227,11 @@ if __name__ == "__main__":
             lines = wrf.readlines()
             for line in lines:
                 gameState, word, roundCount = line.strip('\n').split(' | ')
-                if gameState not in gameStates and tmpRoundCounts != 0:
-                    avg = sum(tmpRoundCounts) / len(tmpRoundCounts)
+                if gameState not in gameStates:
+                    if len(tmpRoundCounts) == 0:
+                        avg = 0
+                    else:
+                        avg = sum(tmpRoundCounts) / len(tmpRoundCounts)
                     strToWrite = gameState + ' | ' + str(avg) + '\n'
                     stringsToWrite.append(gameState)
                     tmpRoundCounts.clear()
