@@ -2,8 +2,6 @@ from fileinput import isfirstline
 import random
 import sys
 
-from spellchecker import WordFrequency
-
 class WordleGame:
     class EnteredWord:
         def __init__(self, word, information):
