@@ -1,0 +1,14 @@
+{
+  "name": "wordledesktop",
+  "version": "1.0.0",
+  "description": "Wordle Solver for Desktop",
+  "main": "wordle.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Alex Worland",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^17.0.1"
+  }
+}
