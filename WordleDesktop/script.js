@@ -3,6 +3,7 @@ console.log("Script!");
 
 // detect keypresses
 // enter word information
+let information = "";
 function keyDownFunc(e) {
     if (isGameDone) {
         console.log("game is done :(");
@@ -17,14 +18,17 @@ function keyDownFunc(e) {
             case 'g':
                 console.log("g key pressed");
                 tile.style.backgroundColor = "gray";
+                information += "g";
                 break;
             case 'G':
                 console.log("G key pressed");
                 tile.style.backgroundColor = "green";
+                information += "G";
                 break;
             case 'y':
                 console.log("y key pressed");
-                tile.style.backgroundColor = "yellow";
+                tile.style.backgroundColor = "darkkhaki";
+                information += "y";
                 break;
             default:
                 break;
@@ -40,6 +44,7 @@ function keyDownFunc(e) {
         if (colNum > 0) {
             colNum--;
         }
+        information = information.slice(information.length - 1, 1);
     } else if (key === "Enter" && colNum === 5) {
         const word = getWordAtCurrentRow();
         if (colNum > 4) {
@@ -50,14 +55,24 @@ function keyDownFunc(e) {
             isGameDone = true;
             return;
         }
-        game.guessWord(word);
-        updateRow(game.getNextWord());
+        game.guessWord(word, information);
+        const nextWord = game.getNextRecommendedWord();
+        updateRow(nextWord);
+        information = "";
     } else if (key === 'n') {
-        const newWord = game.getNextWord();
+        const newWord = game.getNextRecommendedWord();
         updateRow(newWord);
+    } else if (key === 'p') {
+        const prevWord = game.getPreviousRecommendedWord();
+        updateRow(prevWord);
     } else if (key === 'r') {
-        game.resetGame();
+        rowNum = 0;
+        colNum = 0;
+        information = "";
+        game = new Game(initGameState)
+        const resetWord = game.getNextRecommendedWord();
         clearBoard();
+        updateRow(resetWord);
     }
 }
 
@@ -67,6 +82,7 @@ function clearBoard() {
             let tileName = "row_" + i + "_tile_" + j;
             let tile = document.getElementById(tileName);
             tile.innerHTML = "";
+            tile.style.backgroundColor = "";
         }
     }
 }
@@ -81,7 +97,6 @@ function getWordAtCurrentRow() {
 }
 
 function updateRow(word) {
-    let row = document.getElementById("row_" + rowNum);
     for (let i = 0; i < word.length; i++) {
         let tileName = "row_" + rowNum + "_tile_" + i;
         let tile = document.getElementById(tileName);
@@ -94,6 +109,7 @@ console.log("Game!");
 
 class Game {
     constructor(initGameState) {
+        this.initGameState = initGameState.slice();
         this.gameState = new GameState(initGameState);
         this.isFirstRound = true;
     }
@@ -111,8 +127,18 @@ class Game {
         return wordToReturn;
     }
 
+    getPreviousRecommendedWord() {
+        this.gameState.recommendedWordIndex--;
+        const wordToReturn = this.gameState.getNextWord();
+        if (this.isFirstRound) {
+            this.isFirstRound = false;
+            this.gameState = new GameState([]);
+        }
+        return wordToReturn;
+    }
+
     resetGame() {
-        this.constructor(this.initialState);
+        return new Game(this.initGameState);
     }
 }
 
@@ -121,16 +147,24 @@ class GameState {
         this.validWords = wordList.slice();
         this.validLetters = [];
         this.invalidLetters = [];
-        this.validPositions = [];
-        this.invalidPositions = [];
+        this.validPositions = new Map();
+        this.invalidPositions = new Map();
         this.recommendedWordIndex = 0;
-        if (initialState != null || initialState.length === 0) {
+        if (initialState === null || initialState.length != 0) {
             this.validLetters = initialState;
             this.lintWords();
         }
     }
 
     getNextWord() {
+        if (this.validWords.length === 0) {
+            console.log("No more words");
+            return "";
+        }
+        if (this.validWords.length === 1) {
+            console.log("Only one more word.");
+            return this.validWords[0];
+        }
         const wordToReturn = this.validWords[this.recommendedWordIndex];
         this.recommendedWordIndex++;
         this.recommendedWordIndex %= this.validWords.length;
@@ -143,21 +177,22 @@ class GameState {
             const letterInfo = information[i];
             switch (letterInfo) {
                 case 'g':
-                    if (!this.validLetters.includes(letter)) {
-                        this.invalidLetters.push(letter);
-                    } else {
+                    if (this.validLetters.includes(letter)) {
                         this.addOrPush(letter, i, this.invalidPositions);
+                    } else if (!this.invalidLetters.includes(letter)) {
+                        this.invalidLetters.push(letter);
                     }
                     break;
                 case 'G':
                     if (!this.validLetters.includes(letter)) {
-                        this.invalidLetters.push(letter);
+                        this.validLetters.push(letter);
                     }
                     this.addOrPush(letter, i, this.validPositions);
                     break;
                 case 'y':
-                    // 
-                    this.validLetters.push(letter);
+                    if (!this.validLetters.includes(letter)) {
+                        this.validLetters.push(letter);
+                    }
                     this.addOrPush(letter, i, this.invalidPositions);
                     break;
                 default:
@@ -165,6 +200,7 @@ class GameState {
             }
         }
         this.lintWords();
+        this.recommendedWordIndex = 0;
     };
 
     lintWords() {
@@ -183,19 +219,17 @@ class GameState {
 
     validateWord(word) {
         // check if word is made of valid letters
-        for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
-            if (this.validLetters.includes(letter)) {
-                continue;
-            } else {
+        for (let i = 0; i < this.validLetters.length; i++) {
+            const validLetter = this.validLetters[i];
+            if (!word.includes(validLetter)) {
                 return false;
             }
         }
 
         // check if word has any invalid letters)
-        for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
-            if (this.invalidLetters.includes(letter)) {
+        for (let i = 0; i < this.invalidLetters.length; i++) {
+            const invalidLetter = this.invalidLetters[i];
+            if (word.includes(invalidLetter)) {
                 return false;
             }
         }
@@ -203,10 +237,9 @@ class GameState {
         // check valid positions
         for (let i = 0; i < word.length; i++) {
             const letter = word.charAt(i);
-            const validPositions = this.validPositions[letter];
-            for (let j = 0; j < validPositions; j++) {
-                const position = validPositions[j];
-                if (word.charAt(position) != letter) {
+            if (this.validPositions.has(letter)) {
+                const validPositionsForLetter = this.validPositions.get(letter);
+                if (!validPositionsForLetter.includes(i)) {
                     return false;
                 }
             }
@@ -215,21 +248,23 @@ class GameState {
         // check invalid positions
         for (let i = 0; i < word.length; i++) {
             const letter = word.charAt(i);
-            const invalidPositions = this.invalidPositions[letter];
-            for (let j = 0; j < invalidPositions; j++) {
-                const position = invalidPositions[j];
-                if (word.charAt(position) === letter) {
+            if (this.invalidPositions.has(letter)) {
+                const invalidPositionsForLetter = this.invalidPositions.get(letter);
+                if (invalidPositionsForLetter.includes(i)) {
                     return false;
                 }
             }
         }
-
+    
         return true;
     };
 
     addOrPush(key, value, map) {
         if (map.has(key)) {
-            map[key].push(value);
+            const values = map.get(key);
+            if (!values.includes(value)) {
+                values.push(value);
+            }
         } else {
             map.set(key, [value]);
         }
@@ -40200,9 +40235,10 @@ let game = new Game(initGameState);
 
 function onloadFunction() {
     console.log("Loaded")
+    game = new Game(initGameState);
     const firstWord = game.getNextRecommendedWord();
     updateRow(firstWord);
 }
 
 document.addEventListener("keydown", keyDownFunc);
-document.onload = onloadFunction;
+window.onload = onloadFunction;

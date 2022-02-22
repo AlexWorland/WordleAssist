@@ -28,7 +28,7 @@ body {
    
 .tile {
     border: 3px solid hsl(0, 0%, 39%);
-    /* background-color: gray; */
+    /* background-color: ; */
     width: 50px;
     height: 50px;
     display: flex;
