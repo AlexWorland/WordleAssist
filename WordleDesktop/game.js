@@ -1,95 +1,3 @@
-console.log("Script!");
-
-
-// detect keypresses
-// enter word information
-function keyDownFunc(e) {
-    if (isGameDone) {
-        console.log("game is done :(");
-        return;
-    }
-
-    const key = e.key;
-    const tileName = "row_" + rowNum + "_tile_" + colNum;
-    let tile = document.getElementById(tileName);
-    if (key.match(/[gGy]/i)) {
-        switch (key) {
-            case 'g':
-                console.log("g key pressed");
-                tile.style.backgroundColor = "gray";
-                break;
-            case 'G':
-                console.log("G key pressed");
-                tile.style.backgroundColor = "green";
-                break;
-            case 'y':
-                console.log("y key pressed");
-                tile.style.backgroundColor = "yellow";
-                break;
-            default:
-                break;
-        }
-        colNum++;
-    } else if (key === "Backspace") {
-        if (colNum > 0) {
-            let prevTile = getTile(rowNum, colNum - 1);
-            prevTile.style.backgroundColor = "";
-        } else {
-            tile.style.backgroundColor = "";
-        }
-        if (colNum > 0) {
-            colNum--;
-        }
-    } else if (key === "Enter" && colNum === 5) {
-        const word = getWordAtCurrentRow();
-        if (colNum > 4) {
-            colNum = 0;
-            rowNum++;
-        }
-        if (rowNum > 5) {
-            isGameDone = true;
-            return;
-        }
-        game.guessWord(word);
-        updateRow(game.getNextWord());
-    } else if (key === 'n') {
-        const newWord = game.getNextWord();
-        updateRow(newWord);
-    } else if (key === 'r') {
-        game.resetGame();
-        clearBoard();
-    }
-}
-
-function clearBoard() {
-    for (let i = 0; i < 6; i++) {
-        for (let j = 0; j < 5; j++) {
-            let tileName = "row_" + i + "_tile_" + j;
-            let tile = document.getElementById(tileName);
-            tile.innerHTML = "";
-        }
-    }
-}
-
-function getWordAtCurrentRow() {
-    let row = document.getElementById("row_" + rowNum);
-    let word = "";
-    for (let i = 0; i < row.children.length; i++) {
-        word += row.children[i].innerHTML;
-    }
-    return word;
-}
-
-function updateRow(word) {
-    let row = document.getElementById("row_" + rowNum);
-    for (let i = 0; i < word.length; i++) {
-        let tileName = "row_" + rowNum + "_tile_" + i;
-        let tile = document.getElementById(tileName);
-        tile.innerHTML = word.charAt(i);
-    }
-}
-
-
 console.log("Game!");
 
 class Game {
@@ -103,7 +11,7 @@ class Game {
     }
 
     getNextRecommendedWord() {
-        const wordToReturn = this.gameState.getNextWord();
+        const wordToReturn = this.gameState.getNextRecommendedWord();
         if (this.isFirstRound) {
             this.isFirstRound = false;
             this.gameState = new GameState([]);
@@ -120,7 +28,6 @@ class GameState {
     constructor(initialState) {
         this.validWords = wordList.slice();
         this.validLetters = [];
-        this.invalidLetters = [];
         this.validPositions = [];
         this.invalidPositions = [];
         this.recommendedWordIndex = 0;
@@ -139,7 +46,7 @@ class GameState {
 
     update(word, information) {
         for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
+            const letter = word[i];
             const letterInfo = information[i];
             switch (letterInfo) {
                 case 'g':
@@ -184,7 +91,7 @@ class GameState {
     validateWord(word) {
         // check if word is made of valid letters
         for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
+            const letter = word[i];
             if (this.validLetters.includes(letter)) {
                 continue;
             } else {
@@ -194,7 +101,7 @@ class GameState {
 
         // check if word has any invalid letters)
         for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
+            const letter = word[i];
             if (this.invalidLetters.includes(letter)) {
                 return false;
             }
@@ -202,7 +109,7 @@ class GameState {
 
         // check valid positions
         for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
+            const letter = word[i];
             const validPositions = this.validPositions[letter];
             for (let j = 0; j < validPositions; j++) {
                 const position = validPositions[j];
@@ -214,7 +121,7 @@ class GameState {
 
         // check invalid positions
         for (let i = 0; i < word.length; i++) {
-            const letter = word.charAt(i);
+            const letter = word[i];
             const invalidPositions = this.invalidPositions[letter];
             for (let j = 0; j < invalidPositions; j++) {
                 const position = invalidPositions[j];
@@ -252,9 +159,11 @@ class GameState {
     }
 }
 
-function getTile(row, col) {
-    return document.getElementById("row_" + row + "_tile_" + col);
-}
+
+
+
+
+
 
 const wordList = [
     "about",
@@ -40190,19 +40099,4 @@ const wordList = [
     "goolh",
     "gooek",
     "golgw"
-];
-
-let rowNum = 0;
-let colNum = 0;
-let isGameDone = false;
-const initGameState = ['r', 'a', 'e', 's'];
-let game = new Game(initGameState);
-
-function onloadFunction() {
-    console.log("Loaded")
-    const firstWord = game.getNextRecommendedWord();
-    updateRow(firstWord);
-}
-
-document.addEventListener("keydown", keyDownFunc);
-document.onload = onloadFunction;
+]
