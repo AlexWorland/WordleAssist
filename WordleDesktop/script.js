@@ -74,6 +74,13 @@ function keyDownFunc(e) {
         clearBoard();
         updateRow(resetWord);
     }
+    console.log(game.gameState.validWords);
+    console.log(game.gameState.validWords.includes("vivid"));
+    console.log(game.gameState.validLetters);
+    console.log(game.gameState.validPositions);
+    console.log(game.gameState.invalidPositions);
+    console.log(game.gameState.invalidLetters);
+    // debug vivid
 }
 
 function clearBoard() {
@@ -40230,7 +40237,7 @@ const wordList = [
 let rowNum = 0;
 let colNum = 0;
 let isGameDone = false;
-const initGameState = ['r', 'a', 'e', 's'];
+const initGameState = ['r', 'a', 'e', 'i'];
 let game = new Game(initGameState);
 
 function onloadFunction() {

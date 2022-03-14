@@ -9,6 +9,8 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     text-align: center;
+    /* set font family to calibri */
+    font-family: 'Calibri', sans-serif;
 }
 
 .game {
