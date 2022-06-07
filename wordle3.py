@@ -1,6 +1,7 @@
 import os
 import signal
 import sys
+import tensorflow as tf
 # validLetters = set()
 # invalidLetters = set()
 
@@ -45,6 +46,8 @@ class GameState:
                 else:
                     addOrAppend(letter, i, self.invalidPositions)
             elif information == 'G':
+                if letter in self.invalidLetters:
+                    self.invalidLetters.remove(letter)
                 if letter not in self.validLetters:
                     self.validLetters.add(letter)
                 addOrAppend(letter, i, self.validPositions)
@@ -201,13 +204,17 @@ def main(wordLength):
                 recommendedWordList = lintWords(recommendedWordListBackup.copy(), gameState)
                 firstRound = True
                 continue
-
+            print(recommendedWordList)
+            print(counter)
             print("########## -> Recommended Word:", recommendedWordList[counter])
             print()
 
             wordInformation = getInputWordInformation(wordLength)
-            if 'c' in wordInformation:
+            if 'c' in wordInformation or 'n' in wordInformation:
                 counter += 1
+                counter %= len(recommendedWordList)
+            elif 'p' in wordInformation:
+                counter -= 1
                 counter %= len(recommendedWordList)
             elif 'r' in wordInformation:
                 counter = 0
